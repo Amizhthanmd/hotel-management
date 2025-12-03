@@ -2,7 +2,6 @@ package tenant
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"hotel-management/internal/models"
@@ -18,7 +17,6 @@ const BusinessIDKey contextKey = "business_id"
 func Middleware(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		businessID := c.GetHeader("X-Business-ID")
-		fmt.Println(businessID)
 		if businessID == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "business id required"})
 			c.Abort()

@@ -29,6 +29,7 @@ func InitializeHandler(
 	}
 }
 
+// Create new business
 func (h *Handlers) CreateBusiness(ctx *gin.Context) {
 	var req models.CreateBusinessRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -39,7 +40,7 @@ func (h *Handlers) CreateBusiness(ctx *gin.Context) {
 		})
 		return
 	}
-
+	// Check new business already exists
 	exists, err := h.HotelService.CheckBusinessNameExists(req.Name)
 	if err != nil {
 		h.Logger.Error("Error checking business name existence")
@@ -97,7 +98,7 @@ func (h *Handlers) CreateHotels(ctx *gin.Context) {
 		})
 		return
 	}
-
+	// Check hotel name already exists
 	exists, err := h.HotelService.CheckHotelNameExists(business.SchemaName, req.Name)
 	if err != nil {
 		h.Logger.Error("Error checking hotel name existence")
@@ -175,7 +176,7 @@ func (h *Handlers) CreateHotelRooms(ctx *gin.Context) {
 		})
 		return
 	}
-
+	//  Check room number already exists
 	exists, err := h.HotelService.CheckRoomNumberExists(business.SchemaName, hotelID, req.RoomNumber)
 	if err != nil {
 		h.Logger.Error("Error checking room number")

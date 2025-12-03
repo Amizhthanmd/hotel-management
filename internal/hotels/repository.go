@@ -47,12 +47,12 @@ func (r *HotelRepository) CreateBusiness(name string) (*models.Businesses, error
 	if err != nil {
 		return nil, err
 	}
-
+	// Create new schema for business
 	err = r.db.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", schemaName)).Error
 	if err != nil {
 		return nil, err
 	}
-
+	// Migrate tables to new schema
 	if err := r.db.Table(schemaName + ".hotels").AutoMigrate(&models.Hotel{}); err != nil {
 		return nil, err
 	}
