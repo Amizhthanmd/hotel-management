@@ -43,25 +43,24 @@ func (r *HotelRepository) CheckRoomNumberExists(schemaName string, hotelID strin
 func (r *HotelRepository) CreateBusiness(name string) (*models.Businesses, error) {
 	schemaName := "tenant_" + strings.ReplaceAll(strings.TrimSpace(strings.ToLower(name)), " ", "_")
 	business := &models.Businesses{Name: name, SchemaName: schemaName}
-	err := r.db.Create(business).Error
-	if err != nil {
-		return nil, err
-	}
-	// Create new schema for business
-	err = r.db.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", schemaName)).Error
-	if err != nil {
-		return nil, err
-	}
-	// Migrate tables to new schema
-	if err := r.db.Table(schemaName + ".hotels").AutoMigrate(&models.Hotel{}); err != nil {
-		return nil, err
-	}
 
-	if err := r.db.Table(schemaName + ".rooms").AutoMigrate(&models.Room{}); err != nil {
-		return nil, err
-	}
-
-	return business, nil
+	return business, r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(business).Error; err != nil {
+			return err
+		}
+		// Create new schema for business
+		if err := tx.Exec(fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", schemaName)).Error; err != nil {
+			return err
+		}
+		// Migrate tables to new schema
+		if err := tx.Table(schemaName + ".hotels").AutoMigrate(&models.Hotel{}); err != nil {
+			return err
+		}
+		if err := tx.Table(schemaName + ".rooms").AutoMigrate(&models.Room{}); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (r *HotelRepository) CreateHotel(schemaName string, hotel *models.Hotel) error {
